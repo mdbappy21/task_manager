@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager/data/model_class/network_response.dart';
+import 'package:task_manager/data/model_class/task_list_wrapper_model.dart';
+import 'package:task_manager/data/model_class/task_model.dart';
+import 'package:task_manager/data/network_caller/network_caller.dart';
+import 'package:task_manager/data/utility/urls.dart';
 import 'package:task_manager/ui/Screen/add_new_task_screen.dart';
 import 'package:task_manager/ui/utility/app_Colors.dart';
+import 'package:task_manager/ui/widgets/center_progress_indicator.dart';
+import 'package:task_manager/ui/widgets/snack_bar_massage.dart';
 import 'package:task_manager/ui/widgets/task_item.dart';
 import 'package:task_manager/ui/widgets/task_summary_card.dart';
 
@@ -12,6 +19,13 @@ class NewTaskScreen extends StatefulWidget {
 }
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
+  bool _getNewTaskInProgress=false;
+  List<TaskModel>newTaskList=[];
+   @override
+  void initState() {
+    super.initState();
+    _getNewTask();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,11 +36,20 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             _buildSummarySection(),
             const SizedBox(height: 12,),
             Expanded(
-              child: ListView.builder(
-                  itemCount: 10,
-                  itemBuilder: (context, index) {
-                    return TaskItem();
-                  }),
+              child: RefreshIndicator(
+                onRefresh: () async{
+                  _getNewTask();
+                },
+                child: Visibility(
+                  visible: !_getNewTaskInProgress,
+                  replacement: CenterProgressIndicator(),
+                  child: ListView.builder(
+                      itemCount: newTaskList.length,
+                      itemBuilder: (context, index) {
+                        return TaskItem(taskModel: newTaskList[index],);
+                      }),
+                ),
+              ),
             ),
           ],
         ),
@@ -70,6 +93,26 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
         ],
       ),
     );
+  }
+
+  Future<void>_getNewTask()async{
+    _getNewTaskInProgress=true;
+    if(mounted){
+      setState(() {});
+    }
+    NetworkResponse response = await NetworkCaller.getRequest(Urls.newTaskStatus);
+    if(response.isSuccess){
+      TaskListWrapperModel taskListWrapperModel=TaskListWrapperModel.fromJson(response.responseData);
+      newTaskList=taskListWrapperModel.taskList??[];
+    }else{
+      if(mounted){
+        showSnackBarMassage(context, response.errorMassage??'Get New Task failed ! try again');
+      }
+    }
+    _getNewTaskInProgress=false;
+    if(mounted){
+      setState(() {});
+    }
   }
 }
 
