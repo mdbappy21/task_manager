@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:task_manager/ui/Screen/authentication/sign_in_screen.dart';
 import 'package:task_manager/ui/Screen/update_profile_screen.dart';
@@ -13,8 +15,14 @@ AppBar profileAppBar(BuildContext context,[bool fromUpdateProfile =false]) {
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
           radius: 10,
-          backgroundImage:
-              NetworkImage('https://mdbappy21.github.io/portfolio/img/bappy.jpg'),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.memory(
+              base64Decode(AuthController.userData?.photo ?? ''),
+            ),
+          ),
+          // backgroundImage:
+          //     NetworkImage('https://mdbappy21.github.io/portfolio/img/bappy.jpg'),
           // child: Image.network('https://mdbappy21.github.io/portfolio/img/bappy.jpg'),
           // child: ClipOval(
           //   child: NetworkCachedImage(
