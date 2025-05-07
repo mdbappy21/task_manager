@@ -54,15 +54,21 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                   visible: !_getNewTaskInProgress,
                   replacement: CenterProgressIndicator(),
                   child: ListView.builder(
-                      itemCount: newTaskList.length,
+                    itemCount: newTaskList.length + 1,
                       itemBuilder: (context, index) {
-                        return TaskItem(
-                          taskModel: newTaskList[index], onUpdateTask: () {
-                            _getNewTask();
-                            _getTaskCountByStatus();
-                        },
-                        );
-                      }),
+                        if (index == newTaskList.length) {
+                          return SizedBox(height: 54);
+                        } else {
+                          return TaskItem(
+                            taskModel: newTaskList[index],
+                            onUpdateTask: () {
+                              _getNewTask();
+                              _getTaskCountByStatus();
+                            },
+                          );
+                        }
+                      },
+                  ),
                 ),
               ),
             ),
@@ -85,22 +91,36 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   }
 
   Widget _buildSummarySection() {
+    const List<String> fixedStatusOrder = ['New','Completed','Progress', 'Cancelled'];
+    List<TaskCountByStatusModel> orderedList = [];
+    for (final status in fixedStatusOrder) {
+      final matchedItem = taskCountByStatusList.firstWhere(
+            (item) => item.sId?.toLowerCase() == status.toLowerCase(),
+        orElse: () => TaskCountByStatusModel(sId: status, sum: 0),
+      );
+      orderedList.add(matchedItem);
+    }
+
     return Visibility(
       visible: !_getTaskCountByStatusInProgress,
       replacement: CenterProgressIndicator(),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: taskCountByStatusList.map((e){
-            return  TaskSummaryCard(
-              title: e.sId??'Unknown',
-              count: e.sum.toString()
+          children: orderedList.map((e) {
+            return ConstrainedBox(
+              constraints: BoxConstraints(minWidth: 80),
+              child: TaskSummaryCard(
+                title: e.sId ?? 'Unknown',
+                count: e.sum.toString(),
+              ),
             );
-          }).toList()
+          }).toList(),
         ),
       ),
     );
   }
+
 
   Future<void> _getNewTask() async {
     _getNewTaskInProgress = true;

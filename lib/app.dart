@@ -59,6 +59,9 @@ class _TaskManagerState extends State<TaskManager> {
             iconColor: Colors.white
           )
       ),
+        popupMenuTheme:PopupMenuThemeData(
+          color: Colors.grey.shade200,
+        ),
     );
   }
 }

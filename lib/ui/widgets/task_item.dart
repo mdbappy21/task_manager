@@ -8,7 +8,9 @@ import 'package:task_manager/ui/widgets/snack_bar_massage.dart';
 
 class TaskItem extends StatefulWidget {
   const TaskItem({
-    super.key, required this.taskModel, required this.onUpdateTask,
+    super.key,
+    required this.taskModel,
+    required this.onUpdateTask,
   });
 
   final TaskModel taskModel;
@@ -19,34 +21,30 @@ class TaskItem extends StatefulWidget {
 }
 
 class _TaskItemState extends State<TaskItem> {
-  bool _deleteInProgress=false;
-  bool _editInProgress=false;
-  String dropdownValue='';
-  List<String> statusList=[
-    'New',
-    'Progress',
-    'Completed',
-    'Cancelled'
-  ];
+  bool _deleteInProgress = false;
+  bool _editInProgress = false;
+  String dropdownValue = '';
+  List<String> statusList = ['New', 'Progress', 'Completed', 'Cancelled'];
 
   @override
   void initState() {
     super.initState();
-    dropdownValue=widget.taskModel.status!;
+    dropdownValue = widget.taskModel.status!;
   }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       color: Colors.white,
       elevation: 0,
       child: ListTile(
-        title: Text(widget.taskModel.title??'Empty'),
+        title: Text(widget.taskModel.title ?? 'Empty'),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.taskModel.description??'Empty'),
+            Text(widget.taskModel.description ?? 'Empty'),
             Text(
-              'Date : ${widget.taskModel.createdDate?.split('T').first}',
+              'Created Date : ${widget.taskModel.createdDate?.split('T').first}',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w600,
@@ -56,12 +54,11 @@ class _TaskItemState extends State<TaskItem> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Chip(
-                  label: Text(widget.taskModel.status??'New'),
+                  label: Text(widget.taskModel.status ?? 'New'),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   // backgroundColor: Colors.teal,
                 ),
                 OverflowBar(
@@ -82,6 +79,7 @@ class _TaskItemState extends State<TaskItem> {
                         icon: Icon(Icons.edit),
                         onSelected: (String selectedValue) {
                           dropdownValue = selectedValue;
+                          _editTaskStatus();
                           if (mounted) {
                             setState(() {});
                           }
@@ -90,7 +88,15 @@ class _TaskItemState extends State<TaskItem> {
                           return statusList.map((String value) {
                             return PopupMenuItem<String>(
                               value: value,
-                              child: ListTile(title: Text(value), trailing:dropdownValue==value?Icon(Icons.done):null,),
+                              child: SizedBox(
+                                width: 100,
+                                child: ListTile(
+                                  title: Text(value),
+                                  trailing: dropdownValue == value
+                                      ? Icon(Icons.done,color: Colors.black,)
+                                      : null,
+                                ),
+                              ),
                             );
                           }).toList();
                         },
@@ -105,13 +111,14 @@ class _TaskItemState extends State<TaskItem> {
       ),
     );
   }
+
   Future<void> _deleteTask() async {
     _deleteInProgress = true;
     if (mounted) {
       setState(() {});
     }
     NetworkResponse response =
-    await NetworkCaller.getRequest(Urls.deleteTask(widget.taskModel.sId!));
+        await NetworkCaller.getRequest(Urls.deleteTask(widget.taskModel.sId!));
     if (response.isSuccess) {
       widget.onUpdateTask();
     } else {
@@ -121,6 +128,26 @@ class _TaskItemState extends State<TaskItem> {
     }
     _deleteInProgress = false;
     if (mounted) {
+      setState(() {});
+    }
+  }
+
+
+  Future<void>_editTaskStatus()async{
+    _editInProgress=true;
+    if(mounted){
+      setState(() {});
+    }
+    NetworkResponse response= await NetworkCaller.getRequest(Urls.updateTaskStatus(widget.taskModel.sId!,dropdownValue ));
+    if(response.isSuccess){
+      widget.onUpdateTask();
+    }else{
+      if(mounted){
+        showSnackBarMassage(context, response.errorMassage??'Update Status Failed! Try again');
+      }
+    }
+    _editInProgress=false;
+    if(mounted){
       setState(() {});
     }
   }

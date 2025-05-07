@@ -7,8 +7,8 @@ import 'package:task_manager/ui/utility/app_colors.dart';
 import 'package:task_manager/ui/widgets/background_widget.dart';
 
 class PinVerificationScreen extends StatefulWidget {
-  const PinVerificationScreen({super.key});
-
+  const PinVerificationScreen({super.key, required this.email});
+  final String email;
   @override
   State<PinVerificationScreen> createState() => _PinVerificationScreenState();
 }
