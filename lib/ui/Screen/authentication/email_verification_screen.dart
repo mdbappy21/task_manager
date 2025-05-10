@@ -107,7 +107,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (context)=>PinVerificationScreen(email: _emailTEController.text)));
     } else {
       if (mounted) {
-        showSnackBarMassage(context,'Email has not register yet. Try login');
+        showSnackBarMassage(context,'Email has not register yet. Try signup');
       }
     }
   }
@@ -121,9 +121,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     final NetworkResponse response = await NetworkCaller.getRequest(
         Urls.recoveryEmail(email));
 
-    if (response.isSuccess) {
+    if (response.isSuccess&& response.responseData['status']=='success') {
       isSuccess = true;
-    } else {}
+    } else {
+      isSuccess=false;
+    }
 
     _inProgress = false;
     if (mounted) {

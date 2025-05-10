@@ -70,6 +70,7 @@ class NetworkCaller {
           statusCode: -1, isSuccess: false, errorMassage: e.toString());
     }
   }
+
   static Future<void> redirectToLogin() async {
    await AuthController.clearAllData();
    Navigator.pushAndRemoveUntil(TaskManager.navigatorKey.currentContext!, MaterialPageRoute(builder: (context)=>SignInScreen()), (route)=>false);
