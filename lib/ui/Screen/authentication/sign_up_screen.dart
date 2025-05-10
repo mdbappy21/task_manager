@@ -1,14 +1,10 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_manager/data/model_class/network_response.dart';
-import 'package:task_manager/data/network_caller/network_caller.dart';
-import 'package:task_manager/data/utility/urls.dart';
 import 'package:task_manager/ui/Screen/authentication/sign_in_screen.dart';
 import 'package:task_manager/ui/controller/sign_up_controller.dart';
-import 'package:task_manager/ui/utility/app_colors.dart';
 import 'package:task_manager/ui/utility/app_constants.dart';
 import 'package:task_manager/ui/widgets/background_widget.dart';
+import 'package:task_manager/ui/widgets/sign_in_section.dart';
 import 'package:task_manager/ui/widgets/snack_bar_massage.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -49,7 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 16),
                     _buildSignUpButton(),
                     const SizedBox(height: 40),
-                    _buildBackToSignInSection(),
+                    SignInSection(onTap: _onTapSignInButton)
                   ],
                 ),
               ),
@@ -181,28 +177,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }else{
       return;
     }
-  }
-  Widget _buildBackToSignInSection() {
-    return Center(
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(
-            color: Colors.black.withOpacity(0.6),
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
-            fontSize: 16,
-          ),
-          text: "Have an account ?",
-          children: [
-            TextSpan(
-              text: 'Sign In',
-              style: TextStyle(color: AppColors.themeColor),
-              recognizer: TapGestureRecognizer()..onTap = _onTapSignInButton,
-            )
-          ],
-        ),
-      ),
-    );
   }
 
   void _onTapSignInButton() {
