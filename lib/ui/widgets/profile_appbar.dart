@@ -18,9 +18,16 @@ AppBar profileAppBar(BuildContext context, [bool fromUpdateProfile = false]) {
           radius: 10,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: Image.memory(
-              base64Decode(AuthController.userData?.photo ?? ''),
+            child: (AuthController.userData?.photo?.isNotEmpty ?? false)
+                ? Image.memory(
+              base64Decode(AuthController.userData!.photo!),
+            )
+                : const Icon(
+              Icons.person,
+              size: 32,
+              color: Colors.grey,
             ),
+
           ),
         ),
       ),

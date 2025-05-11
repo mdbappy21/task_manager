@@ -159,11 +159,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _onTabSignUpButton() async{
     if (_formKey.currentState!.validate()) {
       bool result = await _signUpController.registerUser(
-          _emailTEController.text,
-          _passwordTEController.text,
-          _firstNameTEController.text,
-          _lastNameTEController.text,
-          _mobileTEController.text);
+        email: _emailTEController.text,
+        firstName: _firstNameTEController.text,
+        lastName: _lastNameTEController.text,
+        mobile: _mobileTEController.text,
+        password: _passwordTEController.text,
+      );
       if(result){
         Get.off(SignInScreen());
         if(mounted){

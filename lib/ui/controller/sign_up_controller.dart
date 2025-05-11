@@ -8,7 +8,12 @@ class SignUpController extends GetxController{
 
   bool get signUpInProgress => _signUpInProgress;
 
-  Future<bool> registerUser(String email,String firstName,String lastName,String mobile,String password) async {
+  Future<bool> registerUser(
+      {required String email,
+      required String firstName,
+      required String lastName,
+      required String mobile,
+      required String password}) async {
     bool isSuccess=false;
     _signUpInProgress = true;
     update();
