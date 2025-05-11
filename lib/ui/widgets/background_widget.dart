@@ -12,7 +12,7 @@ class BackgroundWidget extends StatelessWidget {
     return Stack(
       children: [
         SvgPicture.asset(
-          AssetPaths.backgoundSvg,
+          AssetPaths.backgroundSvg,
           height: double.maxFinite,
           width: double.maxFinite,
           fit: BoxFit.cover,
@@ -20,6 +20,5 @@ class BackgroundWidget extends StatelessWidget {
         child
       ],
     );
-    ;
   }
 }

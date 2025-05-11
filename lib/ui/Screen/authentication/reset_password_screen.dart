@@ -90,7 +90,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Future<void> _onTapConfirmPassword() async {
-    if(_passwordTEController!=_confirmPasswordTEController){
+    if(_passwordTEController.text!=_confirmPasswordTEController.text){
       showSnackBarMassage(context, 'Miss match confirm password');
       return;
     }

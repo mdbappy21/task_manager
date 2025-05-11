@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/data/model_class/network_response.dart';
-import 'package:task_manager/data/model_class/task_list_wrapper_model.dart';
-import 'package:task_manager/data/model_class/task_model.dart';
-import 'package:task_manager/data/network_caller/network_caller.dart';
-import 'package:task_manager/data/utility/urls.dart';
+import 'package:get/get.dart';
+import 'package:task_manager/ui/controller/cancel_task_controller.dart';
 import 'package:task_manager/ui/widgets/center_progress_indicator.dart';
-import 'package:task_manager/ui/widgets/snack_bar_massage.dart';
 import 'package:task_manager/ui/widgets/task_item.dart';
 
 class CancelTaskScreen extends StatefulWidget {
@@ -16,55 +12,40 @@ class CancelTaskScreen extends StatefulWidget {
 }
 
 class _CancelTaskScreenState extends State<CancelTaskScreen> {
-  bool _getCancelledTaskInProgress=false;
-  List<TaskModel>cancelledTaskList=[];
+  final CancelTaskController _cancelTaskController=Get.find<CancelTaskController>();
+
   @override
   void initState() {
     super.initState();
-    _getCancelledTask();
+    _cancelTaskController.getCancelledTask();
   }
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () async{
-        _getCancelledTask();
+        _cancelTaskController.getCancelledTask();
       },
-      child: Visibility(
-        visible: !_getCancelledTaskInProgress,
-        replacement: CenterProgressIndicator(),
-        child: Scaffold(
-          body: ListView.builder(
-            itemCount:cancelledTaskList.length,
-            itemBuilder: (context, index) {
-              return TaskItem(
-                taskModel: cancelledTaskList[index],
-                onUpdateTask: () {
-                  _getCancelledTask();
+      child: GetBuilder<CancelTaskController>(
+        builder: (cancelTaskController) {
+          return Visibility(
+            visible: !cancelTaskController.getCancelledTaskInProgress,
+            replacement: CenterProgressIndicator(),
+            child: Scaffold(
+              body: ListView.builder(
+                itemCount:cancelTaskController.cancelledTaskList.length,
+                itemBuilder: (context, index) {
+                  return TaskItem(
+                    taskModel: cancelTaskController.cancelledTaskList[index],
+                    onUpdateTask: () {
+                      cancelTaskController.getCancelledTask();
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        }
       ),
     );
-  }
-  Future<void>_getCancelledTask()async{
-    _getCancelledTaskInProgress=true;
-    if(mounted){
-      setState(() {});
-    }
-    NetworkResponse response = await NetworkCaller.getRequest(Urls.cancelledTaskStatus);
-    if(response.isSuccess){
-      TaskListWrapperModel taskListWrapperModel=TaskListWrapperModel.fromJson(response.responseData);
-      cancelledTaskList=taskListWrapperModel.taskList??[];
-    }else{
-      if(mounted){
-        showSnackBarMassage(context, response.errorMassage??'Get Cancelled Task failed ! try again');
-      }
-    }
-    _getCancelledTaskInProgress=false;
-    if(mounted){
-      setState(() {});
-    }
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/data/model_class/network_response.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/data/model_class/task_model.dart';
-import 'package:task_manager/data/network_caller/network_caller.dart';
-import 'package:task_manager/data/utility/urls.dart';
+import 'package:task_manager/ui/controller/delete_task_controller.dart';
+import 'package:task_manager/ui/controller/edit_task_controller.dart';
 import 'package:task_manager/ui/widgets/center_progress_indicator.dart';
 import 'package:task_manager/ui/widgets/snack_bar_massage.dart';
 
@@ -21,8 +21,8 @@ class TaskItem extends StatefulWidget {
 }
 
 class _TaskItemState extends State<TaskItem> {
-  bool _deleteInProgress = false;
-  bool _editInProgress = false;
+  final DeleteTaskController _deleteTaskController =
+      Get.find<DeleteTaskController>();
   String dropdownValue = '';
   List<String> statusList = ['New', 'Progress', 'Completed', 'Cancelled'];
 
@@ -45,63 +45,16 @@ class _TaskItemState extends State<TaskItem> {
             Text(widget.taskModel.description ?? 'Empty'),
             Text(
               'Created Date : ${widget.taskModel.createdDate?.split('T').first}',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600,),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Chip(
-                  label: Text(widget.taskModel.status ?? 'New'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  // backgroundColor: Colors.teal,
-                ),
+                _buildTaskStatusLabel(),
                 OverflowBar(
                   children: [
-                    Visibility(
-                      visible: !_deleteInProgress,
-                      replacement: CircularProgressIndicator(),
-                      child: IconButton(
-                          onPressed: () {
-                            _deleteTask();
-                          },
-                          icon: Icon(Icons.delete)),
-                    ),
-                    Visibility(
-                      visible: !_editInProgress,
-                      replacement: CenterProgressIndicator(),
-                      child: PopupMenuButton<String>(
-                        icon: Icon(Icons.edit),
-                        onSelected: (String selectedValue) {
-                          dropdownValue = selectedValue;
-                          _editTaskStatus();
-                          if (mounted) {
-                            setState(() {});
-                          }
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return statusList.map((String value) {
-                            return PopupMenuItem<String>(
-                              value: value,
-                              child: SizedBox(
-                                width: 100,
-                                child: ListTile(
-                                  title: Text(value),
-                                  trailing: dropdownValue == value
-                                      ? Icon(Icons.done,color: Colors.black,)
-                                      : null,
-                                ),
-                              ),
-                            );
-                          }).toList();
-                        },
-                      ),
-                    ),
+                    _buildDeleteIconButton(),
+                    _buildPopUpMenuButton(),
                   ],
                 )
               ],
@@ -112,43 +65,84 @@ class _TaskItemState extends State<TaskItem> {
     );
   }
 
-  Future<void> _deleteTask() async {
-    _deleteInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    NetworkResponse response =
-        await NetworkCaller.getRequest(Urls.deleteTask(widget.taskModel.sId!));
-    if (response.isSuccess) {
-      widget.onUpdateTask();
-    } else {
-      if (mounted) {
-        showSnackBarMassage(context, response.errorMassage ?? 'Get Task count by status failed ! try again');
-      }
-    }
-    _deleteInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
+  Widget _buildTaskStatusLabel() {
+    return Chip(
+      label: Text(widget.taskModel.status ?? 'New'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      // backgroundColor: Colors.teal,
+    );
   }
 
+  Widget _buildDeleteIconButton() {
+    return GetBuilder<DeleteTaskController>(
+      builder: (deleteTaskController) {
+        return Visibility(
+          visible: !deleteTaskController.deleteInProgress,
+          replacement: CircularProgressIndicator(),
+          child: IconButton(
+            onPressed: () {
+              _onTabDeleteButton();
+            },
+            icon: Icon(Icons.delete),
+          ),
+        );
+      },
+    );
+  }
 
-  Future<void>_editTaskStatus()async{
-    _editInProgress=true;
-    if(mounted){
-      setState(() {});
-    }
-    NetworkResponse response= await NetworkCaller.getRequest(Urls.updateTaskStatus(widget.taskModel.sId!,dropdownValue ));
-    if(response.isSuccess){
+  Widget _buildPopUpMenuButton() {
+    return GetBuilder<EditTaskController>(builder: (editTaskController) {
+      return Visibility(
+        visible: !editTaskController.editInProgress,
+        replacement: CenterProgressIndicator(),
+        child: PopupMenuButton<String>(
+          icon: Icon(Icons.edit),
+          onSelected: (String selectedValue) async {
+            dropdownValue = selectedValue;
+            bool result = await editTaskController.editTaskStatus(
+                widget.taskModel.sId!, selectedValue);
+            if (result) {
+              widget.onUpdateTask();
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return statusList.map((String value) {
+              return PopupMenuItem<String>(
+                value: value,
+                child: SizedBox(
+                  width: 100,
+                  child: ListTile(
+                    title: Text(value),
+                    trailing: dropdownValue == value
+                        ? Icon(
+                            Icons.done,
+                            color: Colors.black,
+                          )
+                        : null,
+                  ),
+                ),
+              );
+            }).toList();
+          },
+        ),
+      );
+    });
+  }
+
+  Future<void> _onTabDeleteButton() async {
+    bool result = await _deleteTaskController.deleteTask(widget.taskModel.sId!);
+    if (result) {
       widget.onUpdateTask();
-    }else{
-      if(mounted){
-        showSnackBarMassage(context, response.errorMassage??'Update Status Failed! Try again');
+      if (mounted) {
+        showSnackBarMassage(context, "Delete Successful");
       }
-    }
-    _editInProgress=false;
-    if(mounted){
-      setState(() {});
+    } else {
+      if (mounted) {
+        showSnackBarMassage(context, 'Delete Task Failed');
+      }
     }
   }
 }
