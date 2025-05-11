@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager/ui/Screen/cancel_task_screen.dart';
 import 'package:task_manager/ui/Screen/completed_task_screen.dart';
 import 'package:task_manager/ui/Screen/in_progress_task_screen.dart';
 import 'package:task_manager/ui/Screen/new_task_screen.dart';
+import 'package:task_manager/ui/controller/update_profile_controller.dart';
 import 'package:task_manager/ui/utility/app_colors.dart';
 import 'package:task_manager/ui/widgets/profile_appbar.dart';
 
@@ -25,7 +27,14 @@ class _MainBottomNavScreenState extends State<MainBottomNavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: profileAppBar(context),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: GetBuilder<UpdateProfileController>(
+          builder: (_) {
+            return profileAppBar(context);
+          }
+        ),
+      ),
 
       body: _screen[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
